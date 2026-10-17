@@ -1,4 +1,4 @@
-import asyncio, os, requests
+import asyncio, os, json, requests
 from playwright.async_api import async_playwright
 
 USER_ID = "2890174992"
@@ -20,39 +20,59 @@ def push(msg):
     except Exception as e:
         print("push fail:", e)
 
-async def get_title():
+async def probe():
+    diag = {"goto": "ok", "wait": "", "title": "", "url": "", "has_video": False}
     async with async_playwright() as p:
-        b = await p.chromium.launch(headless=True, args=["--no-sandbox"])
-        ctx = await b.new_context(user_agent=UA, viewport={"width":412,"height":915})
-        await ctx.add_init_script(
-            "Object.defineProperty(navigator,'webdriver',{get:()=>undefined});")
+        b = await p.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"])
+        ctx = await b.new_context(
+            user_agent=UA, viewport={"width": 412, "height": 915},
+            locale="zh-CN", is_mobile=True, has_touch=True)
+        await ctx.add_init_script("""
+Object.defineProperty(navigator,'webdriver',{get:()=>undefined});
+Object.defineProperty(navigator,'languages',{get:()=>['zh-CN','zh','en']});
+Object.defineProperty(navigator,'plugins',{get:()=>[1,2,3,4,5]});
+window.chrome = {runtime:{}};
+""")
         pg = await ctx.new_page()
+        for i in range(2):
+            try:
+                await pg.goto(URL, wait_until="domcontentloaded", timeout=45000)
+                diag["goto"] = "ok"
+                break
+            except Exception as e:
+                diag["goto"] = f"fail{i}: {e}"
         try:
-            await pg.goto(URL, wait_until="domcontentloaded", timeout=45000)
+            await pg.wait_for_function(
+                "t => document.title.includes(t)", arg=ANCHOR, timeout=40000)
+            diag["wait"] = "title_changed"
+        except Exception:
+            diag["wait"] = "timeout_40s"
+        try:
+            diag["title"] = await pg.title()
+            diag["url"] = pg.url
+            diag["has_video"] = await pg.evaluate(
+                "() => !!document.querySelector('video')")
         except Exception as e:
-            print("goto fail:", e)
-        await pg.wait_for_timeout(10000)
-        t = await pg.title()
+            diag["title"] = f"err: {e}"
         await b.close()
-        return t
+    return diag
 
-title = ""
+diag = {"goto": "probe_fail", "wait": "", "title": "", "url": "", "has_video": False}
 try:
-    title = asyncio.run(get_title())
+    diag = asyncio.run(probe())
 except Exception as e:
-    print("get_title fail:", e)
+    diag["goto"] = f"probe_fail: {e}"
 
+title = diag["title"]
 live = ANCHOR in title
-print("title:", title, "| live:", live)
+print("diag:", json.dumps(diag, ensure_ascii=False))
+print("live:", live)
 
-state_file = "state.json"
-prev = ""
-try:
-    prev = open(state_file).read()
-except:
-    pass
-cur = "live" if live else "off"
-if cur != prev:
-    open(state_file, "w").write(cur)
-    if live:
-        push(f"{ANCHOR} 开播了！\ntitle: {title}")
+state_data = {"state": "live" if live else "off", "title": title,
+              "live": live, "diag": diag}
+open("state.json", "w").write(json.dumps(state_data, ensure_ascii=False))
+
+if live:
+    push(f"{ANCHOR} 开播了！\ntitle: {title}")
