@@ -13,7 +13,8 @@ jobs:
       - run: pip install playwright requests
       - run: playwright install chromium
       - run: python monitor.py
-        env: {SCKEY: ${{ secrets.SCKEY }}
+        env:
+  SCKEY: ${{ secrets.SCKEY }}
       - name: 提交状态
         run: |
           git config user.name bot
