@@ -1,1 +1,1 @@
-{"state": "off", "title": "", "live": false, "diag": {"goto": "fail1: Page.goto: net::ERR_TIMED_OUT at https://m.chenzhongtech.com/fw/live/3xjf8stieruidvy?userId=2890174992\nCall log:\n  - navigating to \"https://m.chenzhongtech.com/fw/live/3xjf8stieruidvy?userId=2890174992\", waiting until \"domcontentloaded\"\n", "wait": "timeout_40s", "title": "", "url": "chrome-error://chromewebdata/", "has_video": false}}
+{"state": "live", "live": true, "diag": {"http": 200, "size": 95573, "title": "大big-快手直播", "has_hls": true, "has_stream": true}}
