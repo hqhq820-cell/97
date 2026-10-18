@@ -1,1 +1,1 @@
-{"state": "off", "live": false, "diag": {"http": 0, "size": 0, "title": "", "has_hls": false, "has_stream": false, "error": "HTTPSConnectionPool(host='live.kuaishou.com', port=443): Read timed out. (read timeout=25)"}, "start_notified_date": "2026-10-17"}
+{"state": "off", "live": false, "diag": {"http": 200, "size": 59133, "title": "大big-快手直播", "has_hls": false, "has_stream": false}, "start_notified_date": "2026-10-18"}
