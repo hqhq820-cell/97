@@ -1,1 +1,1 @@
-{"state": "live", "live": true, "diag": {"http": 200, "size": 95575, "title": "大big-快手直播", "has_hls": true, "has_stream": true}, "start_notified_date": "2026-10-23"}
+{"state": "off", "live": false, "diag": {"http": 200, "size": 59133, "title": "大big-快手直播", "has_hls": false, "has_stream": false}, "start_notified_date": "2026-10-24"}
